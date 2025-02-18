@@ -1,0 +1,11 @@
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: test-smb-claim
+spec:
+  storageClassName: synostorage-smb
+  accessModes:
+  - ReadWriteMany
+  resources:
+    requests:
+      storage: 5G
