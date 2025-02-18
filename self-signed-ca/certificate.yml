@@ -1,0 +1,22 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: cluster-wildcard-cert
+  namespace: default
+spec:
+  secretName: cluster-tls-secret
+  duration: 8760h # 1 year
+  renewBefore: 720h # 30 days
+  subject:
+    organizations:
+      - "Cluster Organization"
+  commonName: "cluster.local"
+  dnsNames:
+    - "cluster.local"
+    - "*.cluster.local"
+    - "*.default.svc.cluster.local"
+    - "*.svc.cluster.local"
+  issuerRef:
+    name: selfsigned-cluster-issuer
+    kind: ClusterIssuer
+    group: cert-manager.io
