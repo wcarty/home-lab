@@ -1,5 +1,32 @@
 static_resources:
   listeners:
+    # Web App Listener (Proxies HTTP Requests)
+    - name: webapp_listener
+      address:
+        socket_address:
+          address: 0.0.0.0
+          port_value: 5000
+      filter_chains:
+        - filters:
+            - name: envoy.filters.network.http_connection_manager
+              typed_config:
+                "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
+                stat_prefix: webapp
+                route_config:
+                  virtual_hosts:
+                    - name: webapp
+                      domains: ["*"]
+                      routes:
+                        - match:
+                            prefix: "/"
+                          route:
+                            cluster: webapp_service
+                http_filters:
+                  - name: envoy.filters.http.router
+                    typed_config:
+                      "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
+
+    # MySQL Listener (Proxies Database Traffic)
     - name: mysql_listener
       address:
         socket_address:
@@ -14,6 +41,27 @@ static_resources:
                 cluster: mysql_cluster
 
   clusters:
+    # Cluster for Web App
+    - name: webapp_service
+      type: STRICT_DNS
+      connect_timeout: 2s
+      load_assignment:
+        cluster_name: webapp_service
+        endpoints:
+          - lb_endpoints:
+              - endpoint:
+                  address:
+                    socket_address:
+                      address: webapp
+                      port_value: 5000
+      circuit_breakers:
+        thresholds:
+          - priority: DEFAULT
+            max_connections: 100
+            max_pending_requests: 10
+            max_requests: 50
+
+    # Cluster for MySQL
     - name: mysql_cluster
       type: STRICT_DNS
       connect_timeout: 2s
@@ -32,5 +80,4 @@ static_resources:
             max_connections: 100
             max_pending_requests: 10
             max_requests: 50
-            max_retries: 3  # Circuit breaking still works
 

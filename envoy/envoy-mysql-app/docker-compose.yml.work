@@ -46,7 +46,6 @@ services:
     ports:
       - "9902:9901"  # Envoy admin interface (specific to sidecar)
       - "3307:3307"  # Proxy for MySQL requests from webapp
-      - "5001:5000"  # Web App proxy (external clients access on port 5001)
     depends_on:
       - mysql
     volumes:
