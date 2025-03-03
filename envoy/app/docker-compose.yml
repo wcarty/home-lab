@@ -1,0 +1,26 @@
+# docker-compose.yml
+version: '3.8'
+
+services:
+  webapp:
+    image: wcarty/webapp:latest
+    ports:
+      - "8000:8000"
+    networks:
+      - envoymesh
+    depends_on:
+      - envoy
+  
+  envoy:
+    image: envoyproxy/envoy:v1.33-latest
+    volumes:
+      - ./envoy.yaml:/etc/envoy/envoy.yaml
+    ports:
+      - "9901:9901"  # Envoy admin interface
+      - "10000:10000"  # Proxy to webapp
+    networks:
+      - envoymesh
+
+networks:
+  envoymesh:
+    driver: bridge

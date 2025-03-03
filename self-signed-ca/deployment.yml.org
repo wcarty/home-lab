@@ -60,6 +60,7 @@ spec:
           subPath: nginx.conf
         - name: tls-certs
           mountPath: /etc/ssl/certs
+          readOnly: true
         resources:
           requests:
             memory: "64Mi"

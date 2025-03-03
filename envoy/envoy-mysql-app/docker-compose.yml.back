@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: mysql_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: mydatabase
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./app/db_init.sql:/docker-entrypoint-initdb.d/db_init.sql
+
+  envoy:
+    image: envoyproxy/envoy:v1.28.0
+    container_name: envoy_proxy
+    restart: always
+    volumes:
+      - ./envoy/envoy.yaml:/etc/envoy/envoy.yaml
+    ports:
+      - "9901:9901" # Envoy admin interface
+      - "3307:3307" # Proxy MySQL connections
+
+  app:
+    build: ./app
+    container_name: python_app
+    restart: always
+    depends_on:
+      - envoy
+    environment:
+      DB_HOST: envoy
+      DB_PORT: 3307
+      DB_USER: user
+      DB_PASSWORD: password
+      DB_NAME: mydatabase
+
+volumes:
+  mysql_data:
+
